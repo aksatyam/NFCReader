@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 import { HomePage } from './home.page';
+import { NFC, Ndef } from '@ionic-native/nfc/ngx';
 
 @NgModule({
   imports: [
@@ -18,6 +19,10 @@ import { HomePage } from './home.page';
       }
     ])
   ],
-  declarations: [HomePage]
+  declarations: [HomePage],
+  providers: [
+    NFC,
+    Ndef
+  ]
 })
 export class HomePageModule {}
