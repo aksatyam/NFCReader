@@ -1,6 +1,6 @@
-import { Platform, AlertController } from '@ionic/angular';
 import { Component } from '@angular/core';
-import { NFC, Ndef } from '@ionic-native/nfc/ngx';
+import { Ndef, NFC } from '@ionic-native/nfc/ngx';
+import { AlertController, Platform } from '@ionic/angular';
 
 @Component({
   selector: 'app-home',
@@ -8,8 +8,8 @@ import { NFC, Ndef } from '@ionic-native/nfc/ngx';
   styleUrls: ['home.page.scss'],
 })
 export class HomePage {
-
-  constructor(private nfc: NFC, private ndef: Ndef, public pltf: Platform, public alertCtrl: AlertController) {
+  public NFCRedodedData: any;
+  constructor(public nfc: NFC, public ndef: Ndef, public pltf: Platform, public alertCtrl: AlertController) {
     console.log('Home Page');
     this.nfc.enabled().then(enabled => {
       console.log(`NFC Enable: ${enabled}`);
@@ -21,16 +21,29 @@ export class HomePage {
   }
 
   onStartScan() {
-    console.log('Start');
     this.pltf.ready().then(() => {
       console.log('Platform is Ready');
       this.nfc.enabled().then(enabled => {
         console.log(`NFC Enable: ${enabled}`);
         this.nfc.addTagDiscoveredListener(success => {
-          console.log(`On Scan Failure: ${success}`);
+          console.log(`On Scan Success: ${success}`);
         }, failure => {
           console.log(`On Scan Failure: ${failure}`);
-        });
+        })
+          .subscribe(event => {
+            this.nfc.addMimeTypeListener('text/plain', success => {
+              console.log(success);
+            }, failure => {
+              console.log(failure);
+            }).subscribe(val => {
+              console.log('Data', val);
+              this.NFCRedodedData = val;
+              if (val.tag) {
+                const data = val.tag.ndefMessage['0'].payload;
+                console.log('Stored Data', this.nfc.bytesToString(data));
+              }
+            });
+          });
       })
         .catch(err => {
           console.log(`NFC Disable: ${err}`);
@@ -55,5 +68,11 @@ export class HomePage {
       }]
     });
     return await alert.present();
+  }
+
+  getData(tag) {
+    if (tag) {
+      return JSON.stringify(tag);
+    }
   }
 }
